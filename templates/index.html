@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ODAJ - Scouting Ecuador</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        navy: { 900: '#050b14', 800: '#0f172a', card: '#111b33' },
+                        odaj: { yellow: '#fbbf24', blue: '#0ea5e9', red: '#ef4444' }
+                    },
+                    fontFamily: { 
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'] 
+                    },
+                    boxShadow: { 'glow': '0 0 20px rgba(251, 191, 36, 0.15)', 'card': '0 4px 20px rgba(0,0,0,0.4)' }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { background: linear-gradient(180deg, #050b14 0%, #0f172a 100%); min-height: 100vh; display: flex; flex-direction: column; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .text-glow { text-shadow: 0 0 25px rgba(251, 191, 36, 0.4); }
+        .tab-btn.active { color: white; border-bottom: 3px solid #fbbf24; }
+        .nav-pill.active { background-color: #fbbf24; color: #050b14; font-weight: bold; }
+        .nav-pill { color: #9ca3af; }
+        select { -webkit-appearance: none; appearance: none; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%230ea5e9' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; }
+        .slider-track { transition: transform 0.5s ease-in-out; }
+        @keyframes pulse-glow { 0%, 100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.4); } 50% { box-shadow: 0 0 20px 0 rgba(251, 191, 36, 0.7); } }
+        .btn-pulse { animation: pulse-glow 2s infinite; }
+        .card-hover-fix { transition: all 0.3s ease; position: relative; }
+        .card-hover-fix:hover { transform: translateY(-4px); box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5); border-color: rgba(251, 191, 36, 0.4); z-index: 100 !important; } 
+        .tooltip-visible { pointer-events: none; }
+        .typing-effect { border-right: 2px solid #0ea5e9; animation: blink 1s step-end infinite; }
+        @keyframes blink { 50% { border-color: transparent; } }
+        .form-input { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 0.5rem; padding: 0.75rem; width: 100%; transition: all 0.2s; }
+        .form-input:focus { outline: none; border-color: #fbbf24; background: rgba(255,255,255,0.1); }
+        .form-label { display: block; font-size: 0.75rem; color: #9ca3af; margin-bottom: 0.25rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+    </style>
+</head>
+<body class="text-white p-4 md:p-6 max-w-md mx-auto md:max-w-7xl relative overflow-x-hidden min-h-screen">
+
+    <header class="flex flex-col md:flex-row justify-between items-center mb-8 relative z-50 gap-4 md:gap-0 border-b border-white/5 pb-4 md:pb-0 md:border-none">
+        <div class="flex items-center gap-4 w-full md:w-auto justify-center md:justify-start">
+            <div class="w-14 h-14 rounded-full bg-navy-800 border-2 border-odaj-yellow/30 shadow-glow flex items-center justify-center overflow-hidden p-1 shrink-0 relative z-10 group hover:scale-105 transition">
+                <img src="/static/logo-odaj.jpg" onerror="this.src='https://cdn-icons-png.flaticon.com/512/1165/1165187.png'" alt="Logo ODAJ" class="w-full h-full object-contain drop-shadow-md">
+            </div>
+            <div class="text-center md:text-left">
+                <h1 class="text-odaj-yellow font-bold text-3xl tracking-tighter leading-none">ODAJ</h1>
+                <p class="text-[10px] text-gray-400 tracking-[0.2em] font-bold text-odaj-blue uppercase">Scouting Ecuador</p>
+            </div>
+        </div>
+        
+        <div class="bg-navy-card border border-white/10 rounded-full p-1.5 flex items-center shadow-lg">
+            <button onclick="cambiarVistaPrincipal('jugadores')" id="nav-jugadores" class="nav-pill active px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300 flex items-center gap-2"><i class="fa-solid fa-users"></i> Talentos</button>
+            <button onclick="cambiarVistaPrincipal('partidos')" id="nav-partidos" class="nav-pill px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300 flex items-center gap-2"><i class="fa-regular fa-calendar-days"></i> Calendario</button>
+            <button onclick="cambiarVistaPrincipal('gestion')" id="nav-gestion" class="nav-pill px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300 flex items-center gap-2 hidden"><i class="fa-solid fa-clipboard-list"></i> Gestión</button>
+        </div>
+
+        <div class="flex items-center gap-3 w-full md:w-auto justify-center md:justify-end">
+            <button onclick="toggleLoginModal()" id="btnLogin" class="group flex items-center gap-2 text-gray-400 hover:text-odaj-yellow transition bg-navy-card hover:bg-navy-card/80 px-4 py-2.5 rounded-xl border border-white/10 text-xs font-bold uppercase tracking-wide"><span>Acceso DT</span><i class="fa-solid fa-lock group-hover:text-odaj-yellow transition"></i></button>
+            <button onclick="logout()" id="btnLogout" class="hidden text-red-400 hover:text-white transition bg-navy-card p-2.5 rounded-xl border border-white/10" title="Cerrar Sesión"><i class="fa-solid fa-right-from-bracket"></i></button>
+        </div>
+    </header>
+
+    <div class="mt-4 mb-6 relative z-0 text-center md:text-left">
+        <h2 id="page-title" class="text-4xl font-bold leading-tight">Base de <br><span class="text-odaj-yellow text-glow">Talentos</span></h2>
+    </div>
+
+    <div id="view-jugadores" class="fade-in-view flex-grow">
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10 relative z-40">
+            
+            <div class="md:col-span-2 bg-navy-card rounded-3xl overflow-hidden shadow-2xl border border-white/5 h-80 relative group" onmouseenter="pausarSlider()" onmouseleave="reanudarSlider()">
+                <div id="slider-track" class="slider-track flex h-full w-full">
+                    </div>
+                <div class="absolute bottom-6 left-8 flex gap-2 z-20" id="slider-dots"></div>
+                <div class="absolute inset-0 bg-gradient-to-t from-navy-900/90 via-navy-900/20 to-transparent pointer-events-none"></div>
+            </div>
+            
+            <div class="md:col-span-1 bg-gradient-to-br from-navy-card to-navy-900 rounded-3xl p-8 border border-odaj-yellow/20 shadow-glow flex flex-col justify-center items-center text-center relative overflow-hidden group">
+                <div class="absolute top-0 right-0 -mt-6 -mr-6 w-32 h-32 bg-odaj-yellow/5 rounded-full blur-2xl group-hover:bg-odaj-yellow/10 transition duration-500"></div>
+                <div class="w-16 h-16 bg-navy-800 rounded-2xl flex items-center justify-center mb-4 border border-white/5 shadow-inner">
+                    <i class="fa-solid fa-cloud-arrow-up text-3xl text-odaj-yellow drop-shadow-md group-hover:scale-110 transition duration-300"></i>
+                </div>
+                <h3 class="font-bold text-2xl text-white mb-2 leading-tight">¿Tienes un Crack?</h3>
+                
+                <p class="text-gray-400 text-sm mb-6 px-2 leading-relaxed">
+                    Sube tu perfil a nuestra base.<br>
+                    <span class="text-odaj-yellow text-[10px] font-bold bg-odaj-yellow/10 px-2 py-1 rounded mt-3 inline-block border border-odaj-yellow/20 uppercase tracking-wide">
+                        <i class="fa-solid fa-triangle-exclamation mr-1"></i> Requiere cuenta verificada
+                    </span>
+                </p>
+                
+                <button onclick="toggleLoginModal()" class="btn-pulse bg-odaj-yellow text-navy-900 font-bold py-3.5 px-6 rounded-xl w-full hover:bg-white transition flex items-center justify-center gap-2 shadow-lg group-hover:shadow-odaj-yellow/20">
+                    <i class="fa-solid fa-key"></i> Acceso Pro
+                </button>
+            </div>
+        </div>
+
+        <div class="flex flex-col md:flex-row gap-4 mb-8 sticky top-4 md:relative z-30 p-2 bg-navy-900/80 backdrop-blur-md md:bg-transparent rounded-xl md:p-0">
+            <div class="flex-1 relative">
+                <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 transform -translate-y-1/2 text-odaj-blue z-10"></i>
+                <input type="text" id="searchInput" onkeyup="aplicarFiltros()" placeholder="Buscar jugador..." class="w-full bg-navy-card/90 backdrop-blur-md border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-odaj-yellow transition shadow-lg relative z-0">
+            </div>
+            <div class="relative w-full md:w-1/4">
+                <div class="absolute left-4 top-1/2 transform -translate-y-1/2 text-odaj-blue pointer-events-none z-10"><i class="fa-solid fa-filter"></i></div>
+                <select id="posicionFilter" onchange="aplicarFiltros()" class="w-full bg-navy-card/90 backdrop-blur-md text-white pl-12 pr-10 py-3 rounded-xl border border-white/10 focus:border-odaj-yellow focus:outline-none cursor-pointer transition shadow-lg font-medium text-sm truncate relative z-0"><option value="">Posiciones</option></select>
+            </div>
+            <div class="relative w-full md:w-1/4">
+                <div class="absolute left-4 top-1/2 transform -translate-y-1/2 text-odaj-blue pointer-events-none z-10"><i class="fa-solid fa-shield-halved"></i></div>
+                <select id="equipoFilter" onchange="aplicarFiltros()" class="w-full bg-navy-card/90 backdrop-blur-md text-white pl-12 pr-10 py-3 rounded-xl border border-white/10 focus:border-odaj-yellow focus:outline-none cursor-pointer transition shadow-lg font-medium text-sm truncate relative z-0"><option value="">Equipos</option></select>
+            </div>
+        </div>
+
+        <div id="lista-jugadores" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16 min-h-[300px]">
+            <div class="col-span-full text-center py-20 text-gray-500 animate-pulse"><i class="fa-solid fa-circle-notch fa-spin text-3xl mb-4 text-odaj-yellow"></i><p>Cargando base de datos...</p></div>
+        </div>
+    </div>
+
+    <div id="view-partidos" class="hidden fade-in-view mb-32 flex-grow">
+        <div class="bg-navy-card/50 border border-white/5 rounded-2xl p-6 mb-6">
+            <h3 class="text-xl font-bold text-white mb-4 border-l-4 border-odaj-blue pl-3">Calendario Liga Sub-18</h3>
+            <div id="lista-partidos-general" class="space-y-3"></div>
+        </div>
+    </div>
+
+    <div id="view-gestion" class="hidden fade-in-view mb-32 flex-grow">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2 bg-navy-card rounded-2xl border border-white/10 p-6 md:p-8 shadow-2xl">
+                <div class="flex items-center gap-3 mb-6 pb-4 border-b border-white/5">
+                    <div class="w-10 h-10 rounded-full bg-odaj-yellow/10 flex items-center justify-center text-odaj-yellow"><i class="fa-solid fa-upload"></i></div>
+                    <div><h3 class="text-xl font-bold text-white">Postular Nuevo Talento</h3><p class="text-sm text-gray-400">Complete la ficha técnica.</p></div>
+                </div>
+                <form id="form-jugador" onsubmit="simularSubida(event)" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label class="form-label">Nombre Completo</label><input type="text" class="form-input" required placeholder="Ej: Juan David Pérez"></div><div><label class="form-label">Equipo Actual</label><input type="text" class="form-input" required placeholder="Ej: Meridiano FC"></div></div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4"><div><label class="form-label">Edad</label><input type="number" class="form-input" placeholder="17"></div><div><label class="form-label">Altura (m)</label><input type="text" class="form-input" placeholder="1.75"></div><div><label class="form-label">Peso (kg)</label><input type="text" class="form-input" placeholder="68"></div><div><label class="form-label">Pierna</label><select class="form-input text-gray-300"><option>Derecha</option><option>Izquierda</option><option>Ambas</option></select></div></div>
+                    <div><label class="form-label">Link de Video (YouTube)</label><input type="url" class="form-input" placeholder="https://youtube.com/..."></div>
+                    <div><label class="form-label">Comentarios del Entrenador</label><textarea class="form-input h-24 resize-none" placeholder="Describa las fortalezas..."></textarea></div>
+                    <div class="pt-4"><button type="submit" class="w-full bg-gradient-to-r from-odaj-yellow to-yellow-600 text-navy-900 font-bold py-3 rounded-xl hover:shadow-[0_0_20px_rgba(251,191,36,0.4)] transition transform active:scale-95"><i class="fa-solid fa-paper-plane mr-2"></i> Enviar</button></div>
+                </form>
+            </div>
+            <div class="bg-navy-card/50 rounded-2xl border border-white/5 p-6 h-fit">
+                <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2"><i class="fa-solid fa-list-check text-odaj-blue"></i> Mis Solicitudes</h3>
+                <div id="lista-pendientes" class="space-y-3">
+                    <div class="bg-black/20 p-3 rounded-lg border border-yellow-500/30 flex items-center justify-between"><div><p class="font-bold text-sm text-white">Carlos M.</p><p class="text-xs text-gray-500">Subido hace 2h</p></div><span class="text-[10px] bg-yellow-500/10 text-yellow-500 px-2 py-1 rounded border border-yellow-500/20 uppercase font-bold">Pendiente</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="mt-auto border-t border-white/5 bg-navy-900/50 backdrop-blur-lg">
+        <div class="max-w-7xl mx-auto px-6 py-8">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left">
+                <div class="text-sm text-gray-400">
+                    <p>&copy; 2025 <span class="text-odaj-yellow font-bold">ODAJ</span> Scouting. Todos los derechos reservados.</p>
+                    <p class="text-xs mt-1">Plataforma de gestión de talentos deportivos en Ecuador.</p>
+                </div>
+                <div class="flex flex-col items-center md:items-end gap-2">
+                    <a href="mailto:odaj@gmail.com" class="group flex items-center gap-2 text-white font-bold hover:text-odaj-yellow transition">
+                        <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-odaj-yellow group-hover:text-navy-900 transition"><i class="fa-solid fa-envelope"></i></div>
+                        odaj@gmail.com
+                    </a>
+                    <p class="text-xs text-gray-500">
+                        ¿Sin representante? <span class="text-odaj-blue font-semibold hover:underline cursor-pointer">Envíanos tu video highlights.</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <div id="loginModal" class="fixed inset-0 z-[200] flex items-center justify-center hidden">
+        <div class="absolute inset-0 bg-black/90 backdrop-blur-sm" onclick="toggleLoginModal()"></div>
+        <div class="bg-navy-card border border-odaj-yellow/30 p-8 rounded-2xl shadow-[0_0_50px_rgba(251,191,36,0.1)] relative z-10 w-full max-w-sm transform transition-all scale-100">
+            <button onclick="toggleLoginModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-navy-900 rounded-full flex items-center justify-center mx-auto mb-4 border border-odaj-yellow/50 text-odaj-yellow text-2xl"><i class="fa-solid fa-user-shield"></i></div>
+                <h3 class="text-2xl font-bold text-white">Acceso Entrenador</h3>
+                <p class="text-sm text-gray-400">Zona exclusiva de gestión</p>
+            </div>
+            <form onsubmit="handleLogin(event)" class="space-y-4">
+                <div><input type="password" id="passwordInput" class="form-input text-center text-lg tracking-widest" placeholder="Contraseña de Acceso"></div>
+                <button type="submit" class="w-full bg-odaj-yellow text-navy-900 font-bold py-3 rounded-lg hover:bg-white transition">Entrar</button>
+                <p id="loginError" class="text-red-500 text-xs text-center hidden"><i class="fa-solid fa-triangle-exclamation"></i> Contraseña incorrecta</p>
+            </form>
+        </div>
+    </div>
+
+    <div id="playerModal" class="fixed inset-x-0 bottom-0 top-0 z-[100] pointer-events-none flex flex-col justify-end transition-colors duration-300">
+        <div id="modal-backdrop" onclick="cerrarModal()" class="absolute inset-0 bg-black/80 backdrop-blur-sm opacity-0 transition-opacity duration-300 pointer-events-auto hidden"></div>
+        <div id="modal-content" class="bg-navy-card/95 backdrop-blur-xl border-t border-white/10 rounded-t-[2.5rem] shadow-2xl w-full max-w-4xl mx-auto transform translate-y-full transition-transform duration-300 ease-out pointer-events-auto h-[90vh] flex flex-col">
+            <div class="w-full flex justify-center pt-4 pb-2 flex-shrink-0" onclick="cerrarModal()"><div class="w-12 h-1.5 bg-gray-600 rounded-full cursor-pointer hover:bg-odaj-yellow transition"></div></div>
+            <div class="px-8 pb-4 flex flex-col md:flex-row items-center md:items-start gap-6 flex-shrink-0 text-center md:text-left">
+                <div class="w-28 h-28 min-w-[7rem] rounded-full p-1 border-2 border-odaj-yellow shadow-glow bg-navy-900 relative"><img id="modal-img" src="" class="w-full h-full object-cover rounded-full" onerror="this.src='https://cdn-icons-png.flaticon.com/512/166/166344.png'"></div>
+                <div class="pt-2 w-full overflow-hidden">
+                    <div class="flex justify-center md:justify-between items-start"><h2 id="modal-nombre" class="text-odaj-yellow font-bold text-3xl leading-none mb-2 truncate">Nombre</h2><button onclick="cerrarModal()" class="text-gray-400 hover:text-white p-2 hidden md:block"><i class="fa-solid fa-xmark text-xl"></i></button></div>
+                    <div class="flex flex-col md:flex-row gap-2 mb-3 items-center md:items-start text-sm"><span class="text-gray-300 font-semibold"><i class="fa-solid fa-shirt mr-1"></i> <span id="modal-team">Equipo</span></span><span class="hidden md:inline text-gray-600">|</span><span class="text-odaj-blue font-bold tracking-wide uppercase"><i class="fa-solid fa-layer-group mr-1"></i> <span id="modal-categoria">SUB-??</span></span></div>
+                    <div class="flex flex-wrap justify-center md:justify-start gap-2"><span id="modal-posicion" class="bg-white/10 px-3 py-1 rounded-lg text-sm font-bold text-white border border-white/5">POS</span><span class="bg-navy-900 px-3 py-1 rounded-lg text-sm text-gray-400 border border-white/5 flex items-center gap-2"><i class="fa-solid fa-user-tie text-xs"></i> <span id="modal-manager-header">Manager</span></span></div>
+                </div>
+            </div>
+            <div class="flex justify-between px-6 border-b border-white/5 flex-shrink-0 overflow-x-auto no-scrollbar gap-4">
+                <button onclick="cambiarTab('ficha')" id="btn-ficha" class="tab-btn active pb-4 px-2 text-sm font-semibold text-gray-400 hover:text-white transition whitespace-nowrap"><i class="fa-solid fa-id-card mr-2"></i> Ficha Técnica</button>
+                <button onclick="cambiarTab('scouting')" id="btn-scouting" class="tab-btn pb-4 px-2 text-sm font-semibold text-gray-400 hover:text-white transition whitespace-nowrap"><i class="fa-solid fa-clipboard-user mr-2"></i> Scouting & IA</button>
+                <button onclick="cambiarTab('partidos')" id="btn-partidos" class="tab-btn pb-4 px-2 text-sm font-semibold text-gray-400 hover:text-white transition whitespace-nowrap"><i class="fa-solid fa-calendar-day mr-2"></i> Partidos</button>
+                <button onclick="cambiarTab('media')" id="btn-media" class="tab-btn pb-4 px-2 text-sm font-semibold text-gray-400 hover:text-white transition whitespace-nowrap"><i class="fa-solid fa-address-book mr-2"></i> Contacto</button>
+            </div>
+            <div class="p-6 md:p-8 overflow-y-auto custom-scrollbar flex-1">
+                <div id="tab-ficha" class="tab-content block space-y-6">
+                    <h3 class="text-gray-500 text-xs uppercase font-bold tracking-widest mb-2">Rendimiento Oficial</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3"><div class="bg-black/20 p-4 rounded-xl border border-white/5 text-center"><span class="block text-gray-500 text-xs uppercase font-bold tracking-widest">Goles</span><span id="stat-goles" class="text-2xl font-bold text-odaj-yellow">0</span></div><div class="bg-black/20 p-4 rounded-xl border border-white/5 text-center"><span class="block text-gray-500 text-xs uppercase font-bold tracking-widest">Asistencias</span><span id="stat-asist" class="text-2xl font-bold text-odaj-blue">0</span></div><div class="bg-black/20 p-4 rounded-xl border border-white/5 text-center"><span class="block text-gray-500 text-xs uppercase font-bold tracking-widest">Edad</span><span id="stat-edad" class="text-xl font-bold text-white">0</span></div><div class="bg-black/20 p-4 rounded-xl border border-white/5 text-center"><span class="block text-gray-500 text-xs uppercase font-bold tracking-widest">Pierna</span><span id="stat-pierna" class="text-xl font-bold text-white">-</span></div></div>
+                    <div class="grid grid-cols-2 gap-4 mt-4"><div class="bg-black/20 p-4 rounded-xl border border-white/5 flex items-center gap-4"><div class="w-10 h-10 rounded-full bg-odaj-blue/20 text-odaj-blue flex items-center justify-center"><i class="fa-solid fa-ruler-vertical"></i></div><div><p class="text-xs text-gray-500 uppercase font-bold">Altura</p><p id="modal-altura" class="text-white font-medium">-</p></div></div><div class="bg-black/20 p-4 rounded-xl border border-white/5 flex items-center gap-4"><div class="w-10 h-10 rounded-full bg-green-500/20 text-green-500 flex items-center justify-center"><i class="fa-solid fa-weight-hanging"></i></div><div><p class="text-xs text-gray-500 uppercase font-bold">Peso</p><p id="modal-peso" class="text-white font-medium">-</p></div></div></div>
+                </div>
+                <div id="tab-scouting" class="tab-content hidden space-y-4">
+                    <div class="relative group overflow-hidden rounded-2xl bg-gradient-to-br from-[#161b2e] to-[#0f121f] border border-odaj-yellow/20 p-6 transition-all hover:border-odaj-yellow/40"><div class="absolute top-2 right-4 text-8xl text-odaj-yellow/5 font-serif leading-none select-none">"</div><div class="flex items-center gap-3 mb-4 relative z-10"><div class="w-10 h-10 rounded-full bg-odaj-yellow/10 flex items-center justify-center border border-odaj-yellow/30"><i class="fa-solid fa-user-tie text-odaj-yellow"></i></div><div><h3 class="font-bold text-white text-lg">Reporte Técnico</h3><p class="text-[10px] text-gray-500 uppercase tracking-widest">Observación Humana</p></div></div><div class="relative z-10 pl-2 border-l-2 border-odaj-yellow/50"><p id="modal-comentario" class="text-gray-300 text-sm leading-relaxed italic pl-4">"..."</p></div></div>
+                    <div class="relative group overflow-hidden rounded-2xl bg-[#0f1525] border border-odaj-blue/30 p-6 shadow-lg shadow-odaj-blue/5"><div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20 mix-blend-overlay"></div><div class="absolute -right-10 -bottom-10 w-32 h-32 bg-odaj-blue/10 rounded-full blur-3xl"></div><div class="flex items-center justify-between mb-4 relative z-10"><div class="flex items-center gap-3"><div class="relative w-10 h-10 rounded-xl bg-odaj-blue/10 flex items-center justify-center border border-odaj-blue/30"><i class="fa-solid fa-microchip text-odaj-blue animate-pulse"></i><span class="absolute -top-1 -right-1 flex h-3 w-3"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-odaj-blue opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-odaj-blue"></span></span></div><div><h3 class="font-bold text-white text-lg flex items-center gap-2">ODAJ AI <span class="bg-odaj-blue/20 text-odaj-blue text-[9px] px-1.5 py-0.5 rounded border border-odaj-blue/30">BETA</span></h3><p class="text-[10px] text-gray-500 uppercase tracking-widest">Análisis Predictivo</p></div></div></div><div class="relative z-10 bg-black/40 rounded-lg p-4 border border-white/5 font-mono text-sm text-odaj-blue shadow-inner"><i class="fa-solid fa-terminal mr-2 text-xs opacity-50"></i><span id="modal-ia" class="typing-effect text-gray-300">Procesando...</span></div></div>
+                </div>
+                <div id="tab-partidos" class="tab-content hidden space-y-4"><h3 class="text-gray-500 text-xs uppercase font-bold tracking-widest mb-2">Calendario del Equipo</h3><div id="modal-player-matches" class="space-y-3"></div></div>
+                <div id="tab-media" class="tab-content hidden space-y-6"><div class="bg-gradient-to-r from-navy-900 to-navy-800 p-4 rounded-xl border border-white/10 flex items-center justify-between"><div><p class="text-[10px] uppercase font-bold text-gray-500 mb-1">Representante</p><h3 id="modal-manager-full" class="text-lg font-bold text-white">Nombre Manager</h3></div><div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-gray-300"><i class="fa-solid fa-briefcase"></i></div></div><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div class="bg-white/5 p-3 rounded-xl flex items-center gap-3"><i class="fa-brands fa-whatsapp text-green-400 text-xl"></i><div><p class="text-[10px] text-gray-500">Teléfono</p><p id="modal-telefono" class="text-sm font-mono">-</p></div></div><div class="bg-white/5 p-3 rounded-xl flex items-center gap-3"><i class="fa-brands fa-instagram text-pink-500 text-xl"></i><div><p class="text-[10px] text-gray-500">Instagram</p><p id="modal-instagram" class="text-sm">-</p></div></div></div><div><h3 class="text-gray-500 text-xs uppercase font-bold tracking-widest mb-3 mt-4">Video Highlights</h3><div class="video-container shadow-2xl border border-white/10 rounded-xl overflow-hidden bg-black relative" style="padding-bottom: 56.25%; height: 0;"><iframe id="modal-video-frame" class="absolute top-0 left-0 w-full h-full" src="" frameborder="0" allowfullscreen></iframe><div id="no-video-msg" class="absolute inset-0 flex items-center justify-center text-gray-500 text-sm hidden">Sin video disponible</div></div></div></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let todosLosJugadores = [];
+        let usuarioEntrenador = false;
+
+        const mockMatches = [
+            { id: 1, local: "Meridiano FC", visita: "Pichincha FC", fecha: "Sáb 15 Jun", hora: "09:00 AM", estado: "Finalizado", res: "2-1" },
+            { id: 2, local: "Cumbaya FC", visita: "Mejia FC", fecha: "Sáb 15 Jun", hora: "11:00 AM", estado: "Finalizado", res: "1-1" },
+            { id: 3, local: "Iturralde FC", visita: "Fortaleza FC", fecha: "Dom 16 Jun", hora: "09:00 AM", estado: "Finalizado", res: "0-2" },
+            { id: 4, local: "Independiente JFA", visita: "JBT FC", fecha: "Dom 16 Jun", hora: "11:00 AM", estado: "Finalizado", res: "3-0" },
+            { id: 5, local: "Pichincha FC", visita: "Cumbaya FC", fecha: "Sáb 22 Jun", hora: "10:00 AM", estado: "Programado", res: "-" },
+            { id: 6, local: "Mejia FC", visita: "Meridiano FC", fecha: "Sáb 22 Jun", hora: "12:00 PM", estado: "Programado", res: "-" },
+            { id: 7, local: "Fortaleza FC", visita: "Independiente JFA", fecha: "Dom 23 Jun", hora: "09:30 AM", estado: "Programado", res: "-" },
+            { id: 8, local: "JBT FC", visita: "Iturralde FC", fecha: "Dom 23 Jun", hora: "11:30 AM", estado: "Programado", res: "-" },
+            { id: 9, local: "Meridiano FC", visita: "Fortaleza FC", fecha: "Sáb 29 Jun", hora: "09:00 AM", estado: "Pendiente", res: "-" },
+            { id: 10, local: "Pichincha FC", visita: "Mejia FC", fecha: "Sáb 29 Jun", hora: "11:00 AM", estado: "Pendiente", res: "-" },
+            { id: 11, local: "Cumbaya FC", visita: "JBT FC", fecha: "Dom 30 Jun", hora: "10:00 AM", estado: "Pendiente", res: "-" },
+            { id: 12, local: "Iturralde FC", visita: "Independiente JFA", fecha: "Dom 30 Jun", hora: "12:00 PM", estado: "Pendiente", res: "-" }
+        ];
+
+        function toggleLoginModal() {
+            const m = document.getElementById('loginModal');
+            m.classList.toggle('hidden');
+            document.getElementById('passwordInput').value = '';
+            document.getElementById('loginError').classList.add('hidden');
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const pass = document.getElementById('passwordInput').value;
+            if (pass === 'admin') {
+                usuarioEntrenador = true;
+                toggleLoginModal();
+                document.getElementById('nav-gestion').classList.remove('hidden');
+                document.getElementById('btnLogin').classList.add('hidden');
+                document.getElementById('btnLogout').classList.remove('hidden');
+                alert('¡Bienvenido Entrenador! Has accedido al panel de gestión.');
+                cambiarVistaPrincipal('gestion');
+            } else {
+                document.getElementById('loginError').classList.remove('hidden');
+            }
+        }
+
+        function logout() {
+            usuarioEntrenador = false;
+            document.getElementById('nav-gestion').classList.add('hidden');
+            document.getElementById('btnLogin').classList.remove('hidden');
+            document.getElementById('btnLogout').classList.add('hidden');
+            cambiarVistaPrincipal('jugadores');
+        }
+
+        function simularSubida(e) {
+            e.preventDefault();
+            const nombre = e.target.querySelector('input[type="text"]').value;
+            const listaPendientes = document.getElementById('lista-pendientes');
+            const nuevoItem = `<div class="bg-black/20 p-3 rounded-lg border border-yellow-500/30 flex items-center justify-between animate-pulse"><div><p class="font-bold text-sm text-white">${nombre}</p><p class="text-xs text-gray-500">Justo ahora</p></div><span class="text-[10px] bg-yellow-500/10 text-yellow-500 px-2 py-1 rounded border border-yellow-500/20 uppercase font-bold">En Revisión</span></div>`;
+            listaPendientes.insertAdjacentHTML('afterbegin', nuevoItem);
+            e.target.reset();
+            alert(`Solicitud recibida para: ${nombre}.\n\nTu jugador ha sido enviado a la central para aprobación.`);
+        }
+
+        function cambiarVistaPrincipal(vista) {
+            const vJugadores = document.getElementById('view-jugadores');
+            const vPartidos = document.getElementById('view-partidos');
+            const vGestion = document.getElementById('view-gestion');
+            const btnJug = document.getElementById('nav-jugadores');
+            const btnPart = document.getElementById('nav-partidos');
+            const btnGest = document.getElementById('nav-gestion');
+            const titulo = document.getElementById('page-title');
+
+            vJugadores.classList.add('hidden'); vPartidos.classList.add('hidden'); vGestion.classList.add('hidden');
+            btnJug.classList.remove('active', 'bg-odaj-yellow', 'text-navy-900'); btnPart.classList.remove('active', 'bg-odaj-yellow', 'text-navy-900'); btnGest.classList.remove('active', 'bg-odaj-yellow', 'text-navy-900');
+
+            if (vista === 'jugadores') {
+                vJugadores.classList.remove('hidden');
+                btnJug.classList.add('active', 'bg-odaj-yellow', 'text-navy-900');
+                titulo.innerHTML = 'Base de <br><span class="text-odaj-yellow text-glow">Talentos</span>';
+            } else if (vista === 'partidos') {
+                vPartidos.classList.remove('hidden');
+                btnPart.classList.add('active', 'bg-odaj-yellow', 'text-navy-900');
+                titulo.innerHTML = 'Calendario de <br><span class="text-odaj-blue text-glow">Partidos</span>';
+                renderizarCalendarioGeneral();
+            } else if (vista === 'gestion') {
+                vGestion.classList.remove('hidden');
+                btnGest.classList.add('active', 'bg-odaj-yellow', 'text-navy-900');
+                titulo.innerHTML = 'Panel de <br><span class="text-white text-glow">Gestión</span>';
+            }
+        }
+
+        function renderizarCalendarioGeneral() {
+            const contenedor = document.getElementById('lista-partidos-general');
+            contenedor.innerHTML = '';
+            mockMatches.forEach(m => {
+                const esFinalizado = m.estado === "Finalizado";
+                const estadoClass = esFinalizado ? "bg-gray-500/10 text-gray-400 border-gray-500/20" : (m.estado === "Programado" ? "bg-green-500/10 text-green-500 border-green-500/20" : "bg-odaj-blue/10 text-odaj-blue border-odaj-blue/20");
+                const resultadoDisplay = esFinalizado ? `<span class="text-xl font-bold text-odaj-yellow tracking-widest">${m.res}</span>` : `<span class="bg-white/10 px-2 py-1 rounded text-xs font-mono text-gray-400">VS</span>`;
+                const html = `<div class="bg-navy-900/50 hover:bg-navy-900 border border-white/5 hover:border-odaj-blue/30 rounded-xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 transition-all group"><div class="flex items-center gap-4 flex-1 w-full justify-center md:justify-start"><div class="text-center w-24"><span class="block text-white font-bold text-sm">${m.fecha}</span><span class="block text-gray-500 text-xs">${m.hora}</span></div><div class="h-8 w-px bg-white/10 hidden md:block"></div><div class="flex items-center gap-3 flex-1 justify-center md:justify-start"><span class="font-bold text-white text-right flex-1 md:flex-none">${m.local}</span>${resultadoDisplay}<span class="font-bold text-white text-left flex-1 md:flex-none">${m.visita}</span></div></div><div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end"><span class="${estadoClass} border px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">${m.estado}</span></div></div>`;
+                contenedor.innerHTML += html;
+            });
+        }
+
+        function obtenerIniciales(nombre) {
+            if (!nombre || nombre === 'Sin Nombre') return 'SN';
+            const partes = nombre.split(' ').filter(n => n.length > 0);
+            if (partes.length === 0) return '?';
+            if (partes.length === 1) return partes[0].substring(0, 2).toUpperCase();
+            return (partes[0][0] + partes[1][0]).toUpperCase();
+        }
+
+        function obtenerColorAvatar(id) {
+            const colores = ['from-blue-600 to-blue-800', 'from-emerald-600 to-emerald-800', 'from-indigo-600 to-indigo-800', 'from-amber-600 to-amber-800', 'from-rose-600 to-rose-800', 'from-cyan-600 to-cyan-800'];
+            return colores[id % colores.length]; 
+        }
+
+        fetch('/api/jugadores')
+            .then(res => res.json())
+            .then(data => {
+                todosLosJugadores = data;
+                renderizarJugadores(data);
+                llenarFiltros(data);
+            })
+            .catch(err => {
+                console.error("Error:", err);
+                document.getElementById('lista-jugadores').innerHTML = `<div class='col-span-full text-center text-red-400 py-10'><p>Error conectando a BD.</p></div>`;
+            });
+
+        function renderizarJugadores(jugadores) {
+            const contenedor = document.getElementById('lista-jugadores');
+            contenedor.innerHTML = '';
+            if(jugadores.length === 0) { contenedor.innerHTML = '<div class="col-span-full text-center py-10 text-gray-500"><p>No hay jugadores.</p></div>'; return; }
+            
+            jugadores.forEach(j => {
+                const nombre = j.nombre || 'Sin Nombre';
+                const iniciales = obtenerIniciales(nombre);
+                const colorFondo = obtenerColorAvatar(j.id || 0);
+                const html = `
+                <div onclick="abrirModal(${j.id})" class="card-hover-fix group relative bg-navy-card hover:bg-[#1e2738] border border-white/5 hover:border-odaj-yellow/40 rounded-2xl p-4 shadow-card cursor-pointer flex flex-col justify-between h-full">
+                    <div class="flex gap-4 mb-3">
+                        <div class="flex-shrink-0">
+                            <div class="w-16 h-16 rounded-full bg-gradient-to-br ${colorFondo} flex items-center justify-center border-2 border-white/10 group-hover:border-odaj-yellow transition-colors shadow-lg">
+                                <span class="text-xl font-bold text-white/90 tracking-wider">${iniciales}</span>
+                            </div>
+                        </div>
+                        <div class="flex-1 min-w-0 flex flex-col justify-center">
+                            <h3 class="text-white font-semibold text-base leading-snug line-clamp-2 group-hover:text-odaj-yellow transition-colors w-full">${nombre}</h3>
+                            <div class="mt-1 flex items-center gap-1.5 text-gray-400 text-xs"><i class="fa-solid fa-shirt text-[10px]"></i><span class="truncate font-medium">${j.equipos || 'Sin Equipo'}</span></div>
+                            <span class="mt-1 inline-flex self-start bg-odaj-blue/10 text-odaj-blue text-[10px] font-bold px-2 py-0.5 rounded border border-odaj-blue/20">Jugador</span>
+                        </div>
+                    </div>
+                    <div class="mt-auto pt-3 border-t border-white/5 flex justify-between items-center text-center px-1">
+                        <div class="flex flex-col"><span class="text-[10px] uppercase tracking-wide text-gray-500 font-bold">Edad</span><span class="text-sm font-medium text-gray-200">${j.edad ? j.edad + ' años' : '-'}</span></div>
+                        <div class="w-px h-6 bg-white/5"></div>
+                        <div class="flex flex-col"><span class="text-[10px] uppercase tracking-wide text-gray-500 font-bold">Pie</span><span class="text-sm font-medium text-gray-200">${j.pierna_buena || '-'}</span></div>
+                        <div class="w-px h-6 bg-white/5"></div>
+                        <div class="flex flex-col"><span class="text-[10px] uppercase tracking-wide text-gray-500 font-bold">Altura</span><span class="text-sm font-medium text-gray-200">${j.altura || '-'}</span></div>
+                    </div>
+                    <div class="tooltip-visible hidden md:block absolute left-1/2 bottom-full mb-3 transform -translate-x-1/2 bg-navy-900/95 border border-odaj-blue/50 text-white text-xs p-3 rounded-xl shadow-2xl opacity-0 group-hover:opacity-100 transition-all duration-200 min-w-[140px] translate-y-2 group-hover:translate-y-0 backdrop-blur-md">
+                        <div class="absolute left-1/2 -bottom-2 w-3 h-3 bg-navy-900/95 border-b border-r border-odaj-blue/50 transform rotate-45 -translate-x-1/2"></div>
+                        <div class="grid grid-cols-2 gap-x-2 gap-y-1 text-center">
+                            <div><span class="text-gray-400 text-[10px]">Goles</span><br><b class="text-base text-odaj-yellow">${j.goles_oficiales || 0}</b></div>
+                            <div><span class="text-gray-400 text-[10px]">Asist.</span><br><b class="text-base text-odaj-blue">${j.asistencias_oficiales || 0}</b></div>
+                        </div>
+                    </div>
+                </div>`;
+                contenedor.innerHTML += html;
+            });
+        }
+
+        function llenarFiltros(jugadores) {
+            const sPos = document.getElementById('posicionFilter');
+            const sEq = document.getElementById('equipoFilter');
+            sPos.innerHTML += `<option value="Jugador">Jugador</option>`; 
+            const equipos = [...new Set(jugadores.map(j => j.equipos).filter(Boolean))].sort();
+            equipos.forEach(e => sEq.innerHTML += `<option value="${e}">${e}</option>`);
+        }
+
+        function aplicarFiltros() {
+            const texto = document.getElementById('searchInput').value.toLowerCase();
+            const pos = document.getElementById('posicionFilter').value;
+            const eq = document.getElementById('equipoFilter').value;
+            const filtrados = todosLosJugadores.filter(j => {
+                const jNombre = (j.nombre || "").toLowerCase();
+                const jPos = "Jugador";
+                const jEq = j.equipos || "Sin Equipo Asignado";
+                return jNombre.includes(texto) && (pos === "" || jPos === pos) && (eq === "" || jEq === eq);
+            });
+            renderizarJugadores(filtrados);
+        }
+        
+        function abrirModal(id) {
+            const j = todosLosJugadores.find(x => x.id == id); 
+            if(!j) return;
+
+            document.getElementById('modal-nombre').innerText = j.nombre || 'Sin Nombre';
+            const equipoJugador = j.equipos || 'Sin Equipo';
+            document.getElementById('modal-team').innerText = equipoJugador;
+            document.getElementById('modal-posicion').innerText = 'Jugador';
+            const edad = j.edad || 0;
+            document.getElementById('modal-categoria').innerText = edad > 0 ? `SUB-${edad}` : 'S/C';
+            const managerName = j.contactos || 'No registrado';
+            document.getElementById('modal-manager-header').innerText = managerName.split(' ')[0];
+            document.getElementById('modal-manager-full').innerText = managerName;
+
+            document.getElementById('stat-goles').innerText = j.goles_oficiales || 0;
+            document.getElementById('stat-asist').innerText = j.asistencias_oficiales || 0;
+            document.getElementById('stat-edad').innerText = edad;
+            document.getElementById('stat-pierna').innerText = j.pierna_buena || '-';
+            document.getElementById('modal-altura').innerText = j.altura || '-';
+            document.getElementById('modal-peso').innerText = j.peso || '-';
+
+            document.getElementById('modal-comentario').innerText = j.comentarios_profesor || "Sin reporte del profesor.";
+            document.getElementById('modal-ia').innerText = j.ia_analisis || "Análisis pendiente.";
+
+            document.getElementById('modal-telefono').innerText = j.telefono || '-';
+            document.getElementById('modal-instagram').innerText = j.instagram || 'No registrado';
+            const foto = j.foto_url && j.foto_url.length > 5 ? j.foto_url : 'https://cdn-icons-png.flaticon.com/512/166/166344.png';
+            document.getElementById('modal-img').src = foto;
+
+            const videoFrame = document.getElementById('modal-video-frame');
+            const noVideoMsg = document.getElementById('no-video-msg');
+            let vidUrl = j.video_url || "";
+            if (vidUrl && (vidUrl.includes('youtube') || vidUrl.includes('youtu.be'))) {
+                let videoId = "";
+                if(vidUrl.includes('v=')) videoId = vidUrl.split('v=')[1].split('&')[0];
+                else if(vidUrl.includes('youtu.be/')) videoId = vidUrl.split('youtu.be/')[1];
+                if(videoId) { videoFrame.src = `https://www.youtube.com/embed/${videoId}`; videoFrame.classList.remove('hidden'); noVideoMsg.classList.add('hidden'); }
+            } else { videoFrame.src = ""; videoFrame.classList.add('hidden'); noVideoMsg.classList.remove('hidden'); }
+
+            const contenedorPartidos = document.getElementById('modal-player-matches');
+            contenedorPartidos.innerHTML = '';
+            const partidosJugador = mockMatches.filter(m => m.local === equipoJugador || m.visita === equipoJugador);
+            if (partidosJugador.length > 0) {
+                partidosJugador.forEach(m => {
+                    const esLocal = m.local === equipoJugador;
+                    const esFinalizado = m.estado === "Finalizado";
+                    const estadoText = esFinalizado ? m.res : m.hora;
+                    const estadoColor = esFinalizado ? "text-odaj-yellow" : "text-white";
+                    const html = `<div class="bg-white/5 border border-white/5 rounded-lg p-3 flex items-center justify-between"><div class="flex items-center gap-3"><div class="text-center bg-black/20 rounded p-1 min-w-[50px]"><span class="block text-xs font-bold text-gray-300">${m.fecha.split(' ')[0]}</span><span class="block text-sm font-bold text-white">${m.fecha.split(' ')[1]}</span></div><div><p class="text-xs text-gray-400 uppercase font-bold mb-0.5">VS ${esLocal ? m.visita : m.local}</p><p class="text-sm font-bold ${estadoColor}">${estadoText}</p></div></div><div class="text-right"><span class="text-[10px] bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded border border-blue-500/30">${esLocal ? 'LOCAL' : 'VISITA'}</span></div></div>`;
+                    contenedorPartidos.innerHTML += html;
+                });
+            } else { contenedorPartidos.innerHTML = `<div class="text-center py-6 border border-dashed border-white/10 rounded-lg"><i class="fa-regular fa-calendar-xmark text-2xl text-gray-600 mb-2"></i><p class="text-gray-500 text-sm">No hay partidos programados para<br><span class="text-odaj-yellow">${equipoJugador}</span></p></div>`; }
+
+            const m = document.getElementById('modal-content'), b = document.getElementById('modal-backdrop');
+            b.classList.remove('hidden'); 
+            setTimeout(()=>{ b.classList.remove('opacity-0'); m.classList.remove('translate-y-full'); }, 10);
+            cambiarTab('ficha');
+        }
+
+        function cerrarModal() {
+            const m = document.getElementById('modal-content'), b = document.getElementById('modal-backdrop');
+            m.classList.add('translate-y-full'); b.classList.add('opacity-0');
+            setTimeout(()=>{ b.classList.add('hidden'); document.getElementById('modal-video-frame').src = ""; }, 300);
+        }
+
+        function cambiarTab(n) {
+            document.querySelectorAll('.tab-content').forEach(el=>el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el=>{ el.classList.remove('active','text-white'); el.classList.add('text-gray-400'); });
+            document.getElementById('tab-'+n).classList.remove('hidden');
+            const b = document.getElementById('btn-'+n); b.classList.add('active','text-white'); b.classList.remove('text-gray-400');
+        }
+
+        // --- SLIDER (CORREGIDO CON UNSPLASH Y CSS FULL) ---
+        const noticiasData = [
+            { titulo: "La Tri Sub-17", desc: "Microciclo en Casa de la Selección", img: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?q=80&w=1600&auto=format&fit=crop", color: "bg-odaj-yellow text-navy-900" },
+            { titulo: "Independiente del Valle", desc: "Scouting en formativas", img: "https://images.unsplash.com/photo-1517466787929-bc90951d0974?q=80&w=1600&auto=format&fit=crop", color: "bg-blue-600 text-white" },
+            { titulo: "Liga Pro 2025", desc: "Nuevas promesas del fútbol", img: "https://images.unsplash.com/photo-1551958219-acbc608c6377?q=80&w=1600&auto=format&fit=crop", color: "bg-red-500 text-white" }
+        ];
+        
+        let currentSlide = 0;
+        let sliderInterval;
+
+        function initSlider() {
+            const track = document.getElementById('slider-track');
+            const dots = document.getElementById('slider-dots');
+            track.innerHTML = ''; dots.innerHTML = '';
+
+            noticiasData.forEach((n, i) => {
+                const s = document.createElement('div');
+                s.className = "w-full h-full flex-shrink-0 relative"; // Asegura que ocupe todo
+                s.innerHTML = `
+                    <img src="${n.img}" class="absolute inset-0 w-full h-full object-cover">
+                    <div class="relative z-10 px-8 flex flex-col justify-end h-full pb-16">
+                        <span class="${n.color} text-[10px] font-bold px-2 py-0.5 rounded uppercase mb-2 inline-block w-fit shadow-lg">${n.titulo}</span>
+                        <h3 class="text-white font-bold text-3xl drop-shadow-lg">${n.titulo}</h3>
+                        <p class="text-gray-200 text-sm drop-shadow-md font-medium max-w-md">${n.desc}</p>
+                    </div>
+                `;
+                track.appendChild(s);
+
+                const d = document.createElement('button');
+                d.className = `w-2 h-2 rounded-full transition-all ${i===0 ? 'bg-odaj-yellow w-6' : 'bg-white/50'}`;
+                d.onclick = () => { currentSlide = i; updateSlider(); };
+                dots.appendChild(d);
+            });
+            startSlider();
+        }
+
+        function updateSlider() { 
+            document.getElementById('slider-track').style.transform = `translateX(-${currentSlide * 100}%)`;
+            Array.from(document.getElementById('slider-dots').children).forEach((d, i) => {
+                d.className = `w-2 h-2 rounded-full transition-all ${i === currentSlide ? 'bg-odaj-yellow w-6' : 'bg-white/50'}`;
+            });
+        }
+
+        function startSlider() { 
+            if (sliderInterval) clearInterval(sliderInterval);
+            sliderInterval = setInterval(() => { 
+                currentSlide = (currentSlide + 1) % noticiasData.length; 
+                updateSlider(); 
+            }, 4000); 
+        }
+
+        function pausarSlider() { clearInterval(sliderInterval); }
+        function reanudarSlider() { startSlider(); }
+
+        document.addEventListener('DOMContentLoaded', initSlider);
+    </script>
+</body>
+</html>
