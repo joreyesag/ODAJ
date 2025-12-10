@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
-    
+
     <script>
         tailwind.config = {
             theme: {
@@ -16,9 +16,9 @@
                         navy: { 900: '#050b14', 800: '#0f172a', card: '#111b33' },
                         odaj: { yellow: '#fbbf24', blue: '#0ea5e9', red: '#ef4444' }
                     },
-                    fontFamily: { 
+                    fontFamily: {
                         sans: ['Inter', 'sans-serif'],
-                        mono: ['JetBrains Mono', 'monospace'] 
+                        mono: ['JetBrains Mono', 'monospace']
                     },
                     boxShadow: { 'glow': '0 0 20px rgba(251, 191, 36, 0.15)', 'card': '0 4px 20px rgba(0,0,0,0.4)' }
                 }
@@ -39,16 +39,53 @@
         @keyframes pulse-glow { 0%, 100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.4); } 50% { box-shadow: 0 0 20px 0 rgba(251, 191, 36, 0.7); } }
         .btn-pulse { animation: pulse-glow 2s infinite; }
         .card-hover-fix { transition: all 0.3s ease; position: relative; }
-        .card-hover-fix:hover { transform: translateY(-4px); box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5); border-color: rgba(251, 191, 36, 0.4); z-index: 100 !important; } 
+        .card-hover-fix:hover { transform: translateY(-4px); box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5); border-color: rgba(251, 191, 36, 0.4); z-index: 100 !important; }
         .tooltip-visible { pointer-events: none; }
         .typing-effect { border-right: 2px solid #0ea5e9; animation: blink 1s step-end infinite; }
         @keyframes blink { 50% { border-color: transparent; } }
         .form-input { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 0.5rem; padding: 0.75rem; width: 100%; transition: all 0.2s; }
         .form-input:focus { outline: none; border-color: #fbbf24; background: rgba(255,255,255,0.1); }
         .form-label { display: block; font-size: 0.75rem; color: #9ca3af; margin-bottom: 0.25rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+        
+        #splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease-out, visibility 0.5s ease-out;
+        }
+        .splash-logo {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            overflow: hidden;
+            animation: pulse 2s infinite;
+        }
+        .splash-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
     </style>
 </head>
 <body class="text-white p-4 md:p-6 max-w-md mx-auto md:max-w-7xl relative overflow-x-hidden min-h-screen">
+
+    <div id="splash-screen">
+        <div class="splash-logo">
+            <img src="static/splash.jpg" alt="ODAJ Logo" onerror="this.src='https://cdn-icons-png.flaticon.com/512/1165/1165187.png'">
+        </div>
+    </div>
 
     <header class="flex flex-col md:flex-row justify-between items-center mb-8 relative z-50 gap-4 md:gap-0 border-b border-white/5 pb-4 md:pb-0 md:border-none">
         <div class="flex items-center gap-4 w-full md:w-auto justify-center md:justify-start">
@@ -60,7 +97,7 @@
                 <p class="text-[10px] text-gray-400 tracking-[0.2em] font-bold text-odaj-blue uppercase">Scouting Ecuador</p>
             </div>
         </div>
-        
+
         <div class="bg-navy-card border border-white/10 rounded-full p-1.5 flex items-center shadow-lg">
             <button onclick="cambiarVistaPrincipal('jugadores')" id="nav-jugadores" class="nav-pill active px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300 flex items-center gap-2"><i class="fa-solid fa-users"></i> Talentos</button>
             <button onclick="cambiarVistaPrincipal('partidos')" id="nav-partidos" class="nav-pill px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300 flex items-center gap-2"><i class="fa-regular fa-calendar-days"></i> Calendario</button>
@@ -78,37 +115,37 @@
     </div>
 
     <div id="view-jugadores" class="fade-in-view flex-grow">
-        
+
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10 relative z-40">
-            
+
             <div class="md:col-span-2 bg-navy-card rounded-3xl overflow-hidden shadow-2xl border border-white/5 h-80 relative group" onmouseenter="pausarSlider()" onmouseleave="reanudarSlider()">
                 <div id="slider-track" class="slider-track flex h-full w-full">
                     </div>
                 <div class="absolute bottom-6 left-8 flex gap-2 z-20" id="slider-dots"></div>
                 <div class="absolute inset-0 bg-gradient-to-t from-navy-900/90 via-navy-900/20 to-transparent pointer-events-none"></div>
             </div>
-            
+
             <div class="md:col-span-1 bg-gradient-to-br from-navy-card to-navy-900 rounded-3xl p-8 border border-odaj-yellow/20 shadow-glow flex flex-col justify-center items-center text-center relative overflow-hidden group">
                 <div class="absolute top-0 right-0 -mt-6 -mr-6 w-32 h-32 bg-odaj-yellow/5 rounded-full blur-2xl group-hover:bg-odaj-yellow/10 transition duration-500"></div>
                 <div class="w-16 h-16 bg-navy-800 rounded-2xl flex items-center justify-center mb-4 border border-white/5 shadow-inner">
                     <i class="fa-solid fa-cloud-arrow-up text-3xl text-odaj-yellow drop-shadow-md group-hover:scale-110 transition duration-300"></i>
                 </div>
                 <h3 class="font-bold text-2xl text-white mb-2 leading-tight">¿Tienes un Crack?</h3>
-                
+
                 <p class="text-gray-400 text-sm mb-6 px-2 leading-relaxed">
                     Sube tu perfil a nuestra base.<br>
                     <span class="text-odaj-yellow text-[10px] font-bold bg-odaj-yellow/10 px-2 py-1 rounded mt-3 inline-block border border-odaj-yellow/20 uppercase tracking-wide">
                         <i class="fa-solid fa-triangle-exclamation mr-1"></i> Requiere cuenta verificada
                     </span>
                 </p>
-                
+
                 <button onclick="toggleLoginModal()" class="btn-pulse bg-odaj-yellow text-navy-900 font-bold py-3.5 px-6 rounded-xl w-full hover:bg-white transition flex items-center justify-center gap-2 shadow-lg group-hover:shadow-odaj-yellow/20">
                     <i class="fa-solid fa-key"></i> Acceso Pro
                 </button>
             </div>
         </div>
 
-        <div class="flex flex-col md:flex-row gap-4 mb-8 sticky top-4 md:relative z-30 p-2 bg-navy-900/80 backdrop-blur-md md:bg-transparent rounded-xl md:p-0">
+        <div class="flex flex-col md:flex-row gap-4 mb-8 md:sticky md:top-4 z-30 p-2 bg-navy-900/80 backdrop-blur-md md:bg-transparent rounded-xl md:p-0">
             <div class="flex-1 relative">
                 <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 transform -translate-y-1/2 text-odaj-blue z-10"></i>
                 <input type="text" id="searchInput" onkeyup="aplicarFiltros()" placeholder="Buscar jugador..." class="w-full bg-navy-card/90 backdrop-blur-md border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-odaj-yellow transition shadow-lg relative z-0">
@@ -167,9 +204,9 @@
                     <p class="text-xs mt-1">Plataforma de gestión de talentos deportivos en Ecuador.</p>
                 </div>
                 <div class="flex flex-col items-center md:items-end gap-2">
-                    <a href="mailto:odaj@gmail.com" class="group flex items-center gap-2 text-white font-bold hover:text-odaj-yellow transition">
+                    <a href="mailto:odajec@gmail.com" class="group flex items-center gap-2 text-white font-bold hover:text-odaj-yellow transition">
                         <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-odaj-yellow group-hover:text-navy-900 transition"><i class="fa-solid fa-envelope"></i></div>
-                        odaj@gmail.com
+                        odajec@gmail.com
                     </a>
                     <p class="text-xs text-gray-500">
                         ¿Sin representante? <span class="text-odaj-blue font-semibold hover:underline cursor-pointer">Envíanos tu video highlights.</span>
@@ -212,7 +249,7 @@
                 <button onclick="cambiarTab('ficha')" id="btn-ficha" class="tab-btn active pb-4 px-2 text-sm font-semibold text-gray-400 hover:text-white transition whitespace-nowrap"><i class="fa-solid fa-id-card mr-2"></i> Ficha Técnica</button>
                 <button onclick="cambiarTab('scouting')" id="btn-scouting" class="tab-btn pb-4 px-2 text-sm font-semibold text-gray-400 hover:text-white transition whitespace-nowrap"><i class="fa-solid fa-clipboard-user mr-2"></i> Scouting & IA</button>
                 <button onclick="cambiarTab('partidos')" id="btn-partidos" class="tab-btn pb-4 px-2 text-sm font-semibold text-gray-400 hover:text-white transition whitespace-nowrap"><i class="fa-solid fa-calendar-day mr-2"></i> Partidos</button>
-                <button onclick="cambiarTab('media')" id="btn-media" class="tab-btn pb-4 px-2 text-sm font-semibold text-gray-400 hover:text-white transition whitespace-nowrap"><i class="fa-solid fa-address-book mr-2"></i> Contacto</button>
+                <button onclick="cambiarTab('media')" id="btn-media" class="tab-btn pb-4 px-2 text-sm font-semibold text-gray-400 hover:text-white transition whitespace-nowrap"><i class="fa-solid fa-address-book mr-2"></i> Video/Contacto</button>
             </div>
             <div class="p-6 md:p-8 overflow-y-auto custom-scrollbar flex-1">
                 <div id="tab-ficha" class="tab-content block space-y-6">
@@ -248,6 +285,14 @@
             { id: 11, local: "Cumbaya FC", visita: "JBT FC", fecha: "Dom 30 Jun", hora: "10:00 AM", estado: "Pendiente", res: "-" },
             { id: 12, local: "Iturralde FC", visita: "Independiente JFA", fecha: "Dom 30 Jun", hora: "12:00 PM", estado: "Pendiente", res: "-" }
         ];
+
+        setTimeout(function() {
+            const splash = document.getElementById('splash-screen');
+            splash.style.opacity = '0';
+            setTimeout(function() {
+                splash.style.visibility = 'hidden';
+            }, 500);
+        }, 2000);
 
         function toggleLoginModal() {
             const m = document.getElementById('loginModal');
@@ -340,7 +385,7 @@
 
         function obtenerColorAvatar(id) {
             const colores = ['from-blue-600 to-blue-800', 'from-emerald-600 to-emerald-800', 'from-indigo-600 to-indigo-800', 'from-amber-600 to-amber-800', 'from-rose-600 to-rose-800', 'from-cyan-600 to-cyan-800'];
-            return colores[id % colores.length]; 
+            return colores[id % colores.length];
         }
 
         fetch('/api/jugadores')
@@ -359,7 +404,7 @@
             const contenedor = document.getElementById('lista-jugadores');
             contenedor.innerHTML = '';
             if(jugadores.length === 0) { contenedor.innerHTML = '<div class="col-span-full text-center py-10 text-gray-500"><p>No hay jugadores.</p></div>'; return; }
-            
+
             jugadores.forEach(j => {
                 const nombre = j.nombre || 'Sin Nombre';
                 const iniciales = obtenerIniciales(nombre);
@@ -400,7 +445,7 @@
         function llenarFiltros(jugadores) {
             const sPos = document.getElementById('posicionFilter');
             const sEq = document.getElementById('equipoFilter');
-            sPos.innerHTML += `<option value="Jugador">Jugador</option>`; 
+            sPos.innerHTML += `<option value="Jugador">Jugador</option>`;
             const equipos = [...new Set(jugadores.map(j => j.equipos).filter(Boolean))].sort();
             equipos.forEach(e => sEq.innerHTML += `<option value="${e}">${e}</option>`);
         }
@@ -417,9 +462,9 @@
             });
             renderizarJugadores(filtrados);
         }
-        
+
         function abrirModal(id) {
-            const j = todosLosJugadores.find(x => x.id == id); 
+            const j = todosLosJugadores.find(x => x.id == id);
             if(!j) return;
 
             document.getElementById('modal-nombre').innerText = j.nombre || 'Sin Nombre';
@@ -472,7 +517,7 @@
             } else { contenedorPartidos.innerHTML = `<div class="text-center py-6 border border-dashed border-white/10 rounded-lg"><i class="fa-regular fa-calendar-xmark text-2xl text-gray-600 mb-2"></i><p class="text-gray-500 text-sm">No hay partidos programados para<br><span class="text-odaj-yellow">${equipoJugador}</span></p></div>`; }
 
             const m = document.getElementById('modal-content'), b = document.getElementById('modal-backdrop');
-            b.classList.remove('hidden'); 
+            b.classList.remove('hidden');
             setTimeout(()=>{ b.classList.remove('opacity-0'); m.classList.remove('translate-y-full'); }, 10);
             cambiarTab('ficha');
         }
@@ -490,13 +535,12 @@
             const b = document.getElementById('btn-'+n); b.classList.add('active','text-white'); b.classList.remove('text-gray-400');
         }
 
-        // --- SLIDER (CORREGIDO CON UNSPLASH Y CSS FULL) ---
         const noticiasData = [
             { titulo: "La Tri Sub-17", desc: "Microciclo en Casa de la Selección", img: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?q=80&w=1600&auto=format&fit=crop", color: "bg-odaj-yellow text-navy-900" },
             { titulo: "Independiente del Valle", desc: "Scouting en formativas", img: "https://images.unsplash.com/photo-1517466787929-bc90951d0974?q=80&w=1600&auto=format&fit=crop", color: "bg-blue-600 text-white" },
             { titulo: "Liga Pro 2025", desc: "Nuevas promesas del fútbol", img: "https://images.unsplash.com/photo-1551958219-acbc608c6377?q=80&w=1600&auto=format&fit=crop", color: "bg-red-500 text-white" }
         ];
-        
+
         let currentSlide = 0;
         let sliderInterval;
 
@@ -507,7 +551,7 @@
 
             noticiasData.forEach((n, i) => {
                 const s = document.createElement('div');
-                s.className = "w-full h-full flex-shrink-0 relative"; // Asegura que ocupe todo
+                s.className = "w-full h-full flex-shrink-0 relative";
                 s.innerHTML = `
                     <img src="${n.img}" class="absolute inset-0 w-full h-full object-cover">
                     <div class="relative z-10 px-8 flex flex-col justify-end h-full pb-16">
@@ -526,19 +570,19 @@
             startSlider();
         }
 
-        function updateSlider() { 
+        function updateSlider() {
             document.getElementById('slider-track').style.transform = `translateX(-${currentSlide * 100}%)`;
             Array.from(document.getElementById('slider-dots').children).forEach((d, i) => {
                 d.className = `w-2 h-2 rounded-full transition-all ${i === currentSlide ? 'bg-odaj-yellow w-6' : 'bg-white/50'}`;
             });
         }
 
-        function startSlider() { 
+        function startSlider() {
             if (sliderInterval) clearInterval(sliderInterval);
-            sliderInterval = setInterval(() => { 
-                currentSlide = (currentSlide + 1) % noticiasData.length; 
-                updateSlider(); 
-            }, 4000); 
+            sliderInterval = setInterval(() => {
+                currentSlide = (currentSlide + 1) % noticiasData.length;
+                updateSlider();
+            }, 4000);
         }
 
         function pausarSlider() { clearInterval(sliderInterval); }
