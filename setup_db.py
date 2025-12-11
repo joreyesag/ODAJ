@@ -1,10 +1,7 @@
 import sqlite3
-
-# Conectar (crea el archivo si no existe)
 conn = sqlite3.connect('futbol.db')
 cursor = conn.cursor()
 
-# 1. Crear la tabla
 cursor.execute('''
     CREATE TABLE IF NOT EXISTS jugadores (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -15,7 +12,6 @@ cursor.execute('''
     )
 ''')
 
-# 2. Insertar algunos datos de ejemplo (para que no esté vacía)
 jugadores_iniciales = [
     ('Lionel Messi', 'Delantero', 'Inter Miami', '35M'),
     ('Erling Haaland', 'Delantero', 'Manchester City', '180M'),
@@ -28,7 +24,6 @@ cursor.executemany('''
     VALUES (?, ?, ?, ?)
 ''', jugadores_iniciales)
 
-# 3. Guardar cambios y cerrar
 conn.commit()
 conn.close()
 
