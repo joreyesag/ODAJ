@@ -2,14 +2,12 @@ import sqlite3
 
 print("🔨 Re-construyendo base de datos con nuevas columnas...")
 
-# 1. Conexión
 conexion = sqlite3.connect('futbol.db')
 cursor = conexion.cursor()
 
-# 2. Borrón y cuenta nueva
 cursor.execute('DROP TABLE IF EXISTS jugadores')
 
-# 3. Nueva estructura con TUS columnas
+
 cursor.execute('''
     CREATE TABLE jugadores (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -33,29 +31,28 @@ cursor.execute('''
     )
 ''')
 
-# 4. Datos de prueba actualizados (Lamine Yamal como ejemplo)
-# Fíjate que ahora hay que llenar MUCHOS más datos por jugador
+
 jugador_ejemplo = (
-    "Lamine Yamal",          # nombre
-    "13/07/2007",            # nacimiento
-    17,                      # edad
-    "68 kg",                 # peso
-    "1.80 m",                # altura
-    "Izquierda",             # pierna_buena
-    10,                      # goles_oficiales
-    15,                      # asistencias_oficiales
-    "Excelente visión de juego, debe mejorar físico.", # comentarios_profesor
-    "Proyección de estrella mundial según estadísticas.", # ia_analisis
-    "Jorge Mendes",          # contactos (agente/padre)
-    "+34 600 000 000",       # telefono
-    "@lamineyamal",          # instagram
-    "https://youtube.com/watch?v=ejemplo", # video_url
-    "https://img.a.transfermarkt.technology/portrait/header/937958-1700816462.jpg", # foto_url
-    "FC Barcelona",          # equipos
-    "Mataró"                 # ciudad
+    "Lamine Yamal",          
+    "13/07/2007",          
+    17,                      
+    "68 kg",                
+    "1.80 m",                
+    "Izquierda",             
+    10,                      
+    15,                     
+    "Excelente visión de juego, debe mejorar físico.", 
+    "Proyección de estrella mundial según estadísticas.", 
+    "Jorge Mendes",         
+    "+34 600 000 000",    
+    "@lamineyamal",         
+    "https://youtube.com/watch?v=ejemplo", 
+    "https://img.a.transfermarkt.technology/portrait/header/937958-1700816462.jpg", 
+    "FC Barcelona",         
+    "Mataró"                 
 )
 
-# Insertamos el jugador con las 17 columnas de datos
+
 sql_insert = '''
     INSERT INTO jugadores (
         nombre, nacimiento, edad, peso, altura, pierna_buena, 
